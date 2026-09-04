@@ -27,7 +27,9 @@ model = joblib.load(MODEL_PATH)
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({
-        "message": "AI House Price Prediction API is running!"
+        "success": True,
+        "message": "AI House Price Prediction API is running!",
+        "status": "live"
     })
 
 
