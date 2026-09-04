@@ -4,7 +4,7 @@ const initialForm = {
   area: "",
   bedrooms: "",
   bathrooms: "",
-  parking: ""
+  parking: "",
 };
 
 function App() {
@@ -13,24 +13,35 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Handle input changes
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
+  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setLoading(true);
     setError("");
     setResult(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/predict", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+      const response = await fetch(
+        "https://ai-house-price-prediction-zj1l.onrender.com/api/predict",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        }
+      );
 
       const data = await response.json();
 
@@ -38,9 +49,13 @@ function App() {
         throw new Error(data.error || "Prediction failed");
       }
 
+      if (!data.success) {
+        throw new Error(data.error || "Prediction failed");
+      }
+
       setResult(data);
     } catch (err) {
-      setError(err.message + ". Make sure the Flask backend is running.");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -49,9 +64,10 @@ function App() {
   return (
     <main className="app">
       <section className="hero">
-        
-        <h1> House Price Prediction</h1>
-        <p>Enter property details and get an estimated house price.</p>
+        <h1>House Price Prediction</h1>
+        <p>
+          Enter property details and get an estimated house price.
+        </p>
       </section>
 
       <section className="card">
@@ -64,6 +80,7 @@ function App() {
               onChange={handleChange}
               min="1"
             />
+
             <Input
               label="Bedrooms"
               name="bedrooms"
@@ -71,6 +88,7 @@ function App() {
               onChange={handleChange}
               min="1"
             />
+
             <Input
               label="Bathrooms"
               name="bathrooms"
@@ -78,7 +96,7 @@ function App() {
               onChange={handleChange}
               min="1"
             />
-            
+
             <Input
               label="Parking Spaces"
               name="parking"
@@ -86,10 +104,9 @@ function App() {
               onChange={handleChange}
               min="0"
             />
-            
           </div>
 
-          <button disabled={loading}>
+          <button type="submit" disabled={loading}>
             {loading ? "Predicting..." : "Predict House Price"}
           </button>
         </form>
@@ -99,13 +116,15 @@ function App() {
         {result && (
           <div className="result">
             <p>Estimated House Price</p>
+
             <h2>{result.formatted_price}</h2>
-            <span>Prediction generated using a Random Forest ML model.</span>
+
+            <span>
+              Prediction generated using a Random Forest ML model.
+            </span>
           </div>
         )}
       </section>
-
-      
     </main>
   );
 }
@@ -114,6 +133,7 @@ function Input({ label, name, value, onChange, min }) {
   return (
     <label>
       <span>{label}</span>
+
       <input
         type="number"
         name={name}
